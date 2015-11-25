@@ -1,21 +1,21 @@
-# Python client Library for encoding Videos with HeyWatch
+# Python client Library for encoding Videos with Coconut
 
 ## Install
 
-``` language-console
-sudo easy_install heywatch_api
+```console
+sudo easy_install coconutpy
 ```
 
 ## Submitting the job
 
-Use the [API Request Builder](https://app.heywatch.com/job/new) to generate a config file that match your specific workflow.
+Use the [API Request Builder](https://app.coconut.co/job/new) to generate a config file that match your specific workflow.
 
-Example of `heywatch.conf`:
+Example of `coconut.conf`:
 
-``` language-hw
+```ini
 var s3 = s3://accesskey:secretkey@mybucket
 
-set webhook = http://mysite.com/webhook/heywatch?videoId=$vid
+set webhook = http://mysite.com/webhook/coconut?videoId=$vid
 
 -> mp4  = $s3/videos/$vid.mp4
 -> webm = $s3/videos/$vid.webm
@@ -24,13 +24,13 @@ set webhook = http://mysite.com/webhook/heywatch?videoId=$vid
 
 Here is the ruby code to submit the config file:
 
-``` language-python
-import heywatch
-from heywatch import job
+```python
+import coconut
+from coconut import job
 
-job = heywatch.job.create(
+job = coconut.job.create(
   api_key='k-api-key',
-  conf='heywatch.conf',
+  conf='coconut.conf',
   source='http://yoursite.com/media/video.mp4',
   vars={'vid': 1234}
 )
@@ -42,14 +42,32 @@ else:
   print job['error_message']
 ```
 
-Note that you can use the environment variable `HEYWATCH_API_KEY` to set your API key.
+You can also create a job without a config file. To do that you will need to give every settings in the method parameters. Here is the exact same job but without a config file:
+
+```python
+vid = 1234
+s3 = 's3://accesskey:secretkey@mybucket'
+
+job = coconut.job.create(
+  api_key='k-api-key',
+  source='http://yoursite.com/media/video.mp4',
+  webhook='http://mysite.com/webhook/coconut?videoId=' + str(vid),
+  outputs={
+    'mp4': s3 + '/videos/video_' + str(vid) + '.mp4',
+    'webm': s3 + '/videos/video_' + str(vid) + '.webm',
+    'jpg_300x': s3 + '/previews/thumbs_#num#.jpg, number=3'
+  }
+)
+```
+
+Note that you can use the environment variable `COCONUT_API_KEY` to set your API key.
 
 *Released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).*
 
 ---
 
-* HeyWatch website: http://www.heywatchencoding.com
-* API documentation: http://www.heywatchencoding.com/docs
-* Github: http://github.com/heywatch/heywatch_api-ruby
-* Contact: [support@heywatch.com](mailto:support@heywatch.com)
-* Twitter: [@heywatch](http://twitter.com/heywatch) / [@sadikzzz](http://twitter.com/sadikzzz)
+* Coconut website: http://coconut.co
+* API documentation: http://coconut.co/docs
+* Github: http://github.com/opencoconut/coconut.rb
+* Contact: [support@coconut.co](mailto:support@coconut.co)
+* Twitter: [@OpenCoconut](http://twitter.com/opencoconut)
