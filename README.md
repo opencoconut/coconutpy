@@ -22,7 +22,7 @@ set webhook = http://mysite.com/webhook/coconut?videoId=$vid
 -> jpg_300x = $s3/previews/thumbs_#num#.jpg, number=3
 ```
 
-Here is the ruby code to submit the config file:
+Here is the python code to submit the config file:
 
 ```python
 import coconut
