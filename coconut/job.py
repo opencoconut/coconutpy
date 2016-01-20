@@ -1,7 +1,7 @@
 import json
 import os
 import httplib2
-import config
+from coconut import config
 
 USER_AGENT = 'Coconut/2.2.0 (Python)'
 
