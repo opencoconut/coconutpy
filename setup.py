@@ -7,7 +7,7 @@ def read(*paths):
         return f.read()
 setup(
   name = 'coconutpy',
-  version = '2.2.1',
+  version = '2.4.0',
   py_modules = ['coconut.job', 'coconut.config'],
   packages=find_packages(exclude=['tests*']),
   author='Bruno Celeste',
@@ -28,6 +28,9 @@ For more information:
 * Twitter: @openCoconut
 
 Changelogs
+
+2.4.0
+Implements new Job methods to get info about a job and get metadata (new metadata API).
 
 2.2.0
 Added a new method #config to generate a full configuration based on the given parameters. It's especially useful to handle dynamic settings like source or variables that can be set directly in code.

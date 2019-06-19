@@ -3,7 +3,7 @@ import os
 import httplib2
 from coconut import config
 
-USER_AGENT = 'Coconut/2.2.0 (Python)'
+USER_AGENT = 'Coconut/2.4.0 (Python)'
 
 def coconut_url():
   return os.getenv('COCONUT_URL', 'https://api.coconut.co')
