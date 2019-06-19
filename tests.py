@@ -147,5 +147,26 @@ class CoconutTestCase(unittest.TestCase):
 
       self.assertIsNotNone(metadata)
 
+    def test_set_api_version(self):
+      conf = coconut.config.new(
+        api_version='beta',
+        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
+        webhook='http://mysite.com/webhook?vid=$vid&user=$user',
+        outputs={
+          'mp4': '$s3/vid.mp4'
+        }
+      )
+
+      generated = "\n".join([
+        '',
+        'set api_version = beta',
+        'set source = https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
+        'set webhook = http://mysite.com/webhook?vid=$vid&user=$user',
+        '',
+        '-> mp4 = $s3/vid.mp4',
+      ])
+
+      self.assertEqual(generated, conf)
+
 if __name__ == '__main__':
     unittest.main()

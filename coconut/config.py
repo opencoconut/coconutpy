@@ -18,6 +18,10 @@ def new(**kwargs):
     webhook = kwargs['webhook']
     conf.append('set webhook = ' + webhook)
 
+  if 'api_version' in kwargs:
+    api_version = kwargs['api_version']
+    conf.append('set api_version = ' + api_version)
+
   if 'outputs' in kwargs:
     outputs = kwargs['outputs']
     for format,cdn in outputs.items():
