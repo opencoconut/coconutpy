@@ -2,6 +2,7 @@ import unittest
 import coconut
 from coconut import job, config
 import os
+import time
 
 class CoconutTestCase(unittest.TestCase):
 
@@ -13,7 +14,7 @@ class CoconutTestCase(unittest.TestCase):
       )
 
       job = coconut.job.submit(conf)
-      self.assertEqual("ok", job["status"])
+      self.assertEqual("processing", job["status"])
       self.assertTrue(job["id"] > 0)
 
     def test_submit_bad_config(self):
@@ -93,7 +94,7 @@ class CoconutTestCase(unittest.TestCase):
         vars={'vid': 1234, 'user': 5098}
       )
 
-      self.assertEqual("ok", job["status"])
+      self.assertEqual("processing", job["status"])
       self.assertTrue(job["id"] > 0)
 
       os.remove('coconut.conf')
@@ -106,6 +107,45 @@ class CoconutTestCase(unittest.TestCase):
 
       self.assertEqual("error", job["status"])
       self.assertEqual("authentication_failed", job["error_code"])
+
+    def test_get_job_info(self):
+      conf = coconut.config.new(
+        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
+        webhook='http://mysite.com/webhook',
+        outputs={'mp4': 's3://a:s@bucket/video.mp4'}
+      )
+
+      info = coconut.job.submit(conf)
+      job = coconut.job.get(info['id'])
+      self.assertEqual(job['id'], info['id'])
+
+    def test_get_all_metadata(self):
+      conf = coconut.config.new(
+        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
+        webhook='http://mysite.com/webhook',
+        outputs={'mp4': 's3://a:s@bucket/video.mp4'}
+      )
+
+      job = coconut.job.submit(conf)
+
+      time.sleep(4)
+      metadata = coconut.job.get_all_metadata(job['id'])
+
+      self.assertIsNotNone(metadata)
+
+    def test_get_source_metadata(self):
+      conf = coconut.config.new(
+        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
+        webhook='http://mysite.com/webhook',
+        outputs={'mp4': 's3://a:s@bucket/video.mp4'}
+      )
+
+      job = coconut.job.submit(conf)
+
+      time.sleep(4)
+      metadata = coconut.job.get_metadata_for(job['id'], 'source')
+
+      self.assertIsNotNone(metadata)
 
 if __name__ == '__main__':
     unittest.main()
