@@ -60,6 +60,20 @@ job = coconut.job.create(
 )
 ```
 
+
+Other example usage:
+
+```python
+# Getting info about a job
+job = coconut.job.get(18370773);
+
+# Retrieving metadata
+coconut.job.get_all_metadata(18370773);
+
+# Retrieving the source file metadata only
+coconut.job.get_metadata_for(18370773, 'source');
+```
+
 Note that you can use the environment variable `COCONUT_API_KEY` to set your API key.
 
 ## Contributing
