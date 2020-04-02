@@ -1,3 +1,4 @@
 build
 coconutpy.egg-info
 dist
+*.pyc
