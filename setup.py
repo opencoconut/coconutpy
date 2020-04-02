@@ -7,7 +7,7 @@ def read(*paths):
         return f.read()
 setup(
   name = 'coconutpy',
-  version = '2.4.0',
+  version = '2.4.2',
   py_modules = ['coconut.job', 'coconut.config'],
   packages=find_packages(exclude=['tests*']),
   author='Bruno Celeste',
@@ -28,6 +28,9 @@ For more information:
 * Twitter: @openCoconut
 
 Changelogs
+
+2.4.2
+Don't wait for a 401 challenge to pass the auth token to Coconut APIs.
 
 2.4.0
 Implements new Job methods to get info about a job and get metadata (new metadata API).
