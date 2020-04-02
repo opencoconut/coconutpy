@@ -14,7 +14,7 @@ class CoconutTestCase(unittest.TestCase):
       )
 
       job = coconut.job.submit(conf)
-      self.assertEqual("processing", job["status"])
+      self.assertEqual("ok", job["status"])
       self.assertTrue(job["id"] > 0)
 
     def test_submit_bad_config(self):
@@ -94,7 +94,7 @@ class CoconutTestCase(unittest.TestCase):
         vars={'vid': 1234, 'user': 5098}
       )
 
-      self.assertEqual("processing", job["status"])
+      self.assertEqual("ok", job["status"])
       self.assertTrue(job["id"] > 0)
 
       os.remove('coconut.conf')
