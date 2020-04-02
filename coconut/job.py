@@ -1,6 +1,7 @@
 import json
 import os
 import httplib2
+import base64
 from coconut import config
 
 USER_AGENT = 'Coconut/2.4.0 (Python)'
@@ -8,29 +9,30 @@ USER_AGENT = 'Coconut/2.4.0 (Python)'
 def coconut_url():
   return os.getenv('COCONUT_URL', 'https://api.coconut.co')
 
+def get_authorization_header(api_key):
+  if api_key is None:
+    api_key = os.getenv('COCONUT_API_KEY')
+  if api_key is None:
+    raise ValueError('API key must be specified using the api_key parameter or the COCONUT_API_KEY environment variable')
+
+  return 'Basic ' + base64.b64encode('%s:' % api_key)
+
 def submit(config_content, **kwargs):
-  api_key = os.getenv('COCONUT_API_KEY')
-
-  if 'api_key' in kwargs:
-    api_key = kwargs['api_key']
-
   h = httplib2.Http()
-  h.add_credentials(api_key, '')
 
   headers = {'User-Agent': USER_AGENT, 'Content-Type': 'text/plain', 'Accept': 'application/json'}
+  headers['Authorization'] = get_authorization_header(kwargs.get('api_key'))
 
   response, content = h.request(coconut_url() + '/v1/job', 'POST', body=config_content, headers=headers)
 
   return json.loads(content.decode('utf-8'))
 
 def api_get(path, api_key=None):
-  if api_key == None:
-    api_key = os.getenv('COCONUT_API_KEY')
-
   h = httplib2.Http()
-  h.add_credentials(api_key, '')
 
   headers = {'User-Agent': USER_AGENT, 'Content-Type': 'text/plain', 'Accept': 'application/json'}
+  headers['Authorization'] = get_authorization_header(api_key)
+
   response, content = h.request(coconut_url() + path, 'GET', None, headers=headers)
 
   if response.status == 200:

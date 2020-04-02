@@ -4,6 +4,8 @@ from coconut import job, config
 import os
 import time
 
+API_KEY_PARAM = None
+
 class CoconutTestCase(unittest.TestCase):
 
     def test_submit_job(self):
@@ -14,6 +16,19 @@ class CoconutTestCase(unittest.TestCase):
       )
 
       job = coconut.job.submit(conf)
+      self.assertEqual("ok", job["status"])
+      self.assertTrue(job["id"] > 0)
+
+    @unittest.skipIf(API_KEY_PARAM is None, 
+                     'To run this test, set API_KEY_PARAM, but do not commit it to the repo.')
+    def test_submit_job_with_auth_token_param(self):
+      conf = coconut.config.new(
+        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
+        webhook='http://mysite.com/webhook',
+        outputs={'mp4': 's3://a:s@bucket/video.mp4'}
+      )
+
+      job = coconut.job.submit(conf, api_key=API_KEY_PARAM)
       self.assertEqual("ok", job["status"])
       self.assertTrue(job["id"] > 0)
 
