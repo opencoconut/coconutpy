@@ -7,7 +7,7 @@ def read(*paths):
         return f.read()
 setup(
   name = 'coconutpy',
-  version = '2.4.2',
+  version='2.4.3',
   py_modules = ['coconut.job', 'coconut.config'],
   packages=find_packages(exclude=['tests*']),
   author='Bruno Celeste',
@@ -28,6 +28,10 @@ For more information:
 * Twitter: @openCoconut
 
 Changelogs
+
+2.4.3
+Fix Authorization Header: 
+"TypeError: a bytes-like object is required, not 'str'" was returned before
 
 2.4.2
 Don't wait for a 401 challenge to pass the auth token to Coconut APIs.

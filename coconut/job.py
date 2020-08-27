@@ -15,7 +15,9 @@ def get_authorization_header(api_key):
   if api_key is None:
     raise ValueError('API key must be specified using the api_key parameter or the COCONUT_API_KEY environment variable')
 
-  return 'Basic ' + base64.b64encode('%s:' % api_key)
+  api_key = api_key + ":"
+  data_bytes = api_key.encode("utf-8")
+  return 'Basic ' + base64.b64encode(data_bytes).decode("utf-8")
 
 def submit(config_content, **kwargs):
   h = httplib2.Http()

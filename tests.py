@@ -7,7 +7,8 @@ import time
 API_KEY_PARAM = None
 
 class CoconutTestCase(unittest.TestCase):
-
+    @unittest.skipIf(API_KEY_PARAM is None,
+                   'To run this test, set API_KEY_PARAM, but do not commit it to the repo.')
     def test_submit_job(self):
       conf = coconut.config.new(
         source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
@@ -16,7 +17,7 @@ class CoconutTestCase(unittest.TestCase):
       )
 
       job = coconut.job.submit(conf)
-      self.assertEqual("ok", job["status"])
+      self.assertEqual("processing", job["status"])
       self.assertTrue(job["id"] > 0)
 
     @unittest.skipIf(API_KEY_PARAM is None, 
@@ -29,7 +30,7 @@ class CoconutTestCase(unittest.TestCase):
       )
 
       job = coconut.job.submit(conf, api_key=API_KEY_PARAM)
-      self.assertEqual("ok", job["status"])
+      self.assertEqual("processing", job["status"])
       self.assertTrue(job["id"] > 0)
 
     def test_submit_bad_config(self):
@@ -109,7 +110,7 @@ class CoconutTestCase(unittest.TestCase):
         vars={'vid': 1234, 'user': 5098}
       )
 
-      self.assertEqual("ok", job["status"])
+      self.assertEqual("processing", job["status"])
       self.assertTrue(job["id"] > 0)
 
       os.remove('coconut.conf')
