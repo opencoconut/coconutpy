@@ -1,95 +1,78 @@
-# Python client Library for encoding Videos with Coconut
+# Coconut Python Library
 
-## Install
+The Coconut Python library provides access to the Coconut API for encoding videos, packaging media files into HLS and MPEG-Dash, generating thumbnails and GIF animation.
+
+This library is only compatible with the Coconut API v2.
+
+## Documentation
+
+See the [full documentation](https://docs.coconut.co).
+
+## Installation
+
+To install this package, run:
 
 ```console
-sudo easy_install coconutpy
+pip install coconutpy
 ```
 
-## Submitting the job
+## Usage
 
-Use the [API Request Builder](https://app.coconut.co/job/new) to generate a config file that match your specific workflow.
-
-Example of `coconut.conf`:
-
-```ini
-var s3 = s3://accesskey:secretkey@mybucket
-
-set webhook = http://mysite.com/webhook/coconut?videoId=$vid
-
--> mp4  = $s3/videos/$vid.mp4
--> webm = $s3/videos/$vid.webm
--> jpg:300x = $s3/previews/thumbs_#num#.jpg, number=3
-```
-
-Here is the python code to submit the config file:
+The library needs you to set your API key which can be found in your [dashboard](https://app.coconut.co/api). Webhook URL and storage settings are optional but are very convenient because you set them only once.
 
 ```python
 import coconut
-from coconut import job
 
-job = coconut.job.create(
-  api_key='k-api-key',
-  conf='coconut.conf',
-  source='http://yoursite.com/media/video.mp4',
-  vars={'vid': 1234}
-)
+coconut.api_key = 'k-api-key'
 
-if job['status'] == 'ok':
-  print job['id']
-else:
-  print job['error_code']
-  print job['error_message']
+coconut.notification = {
+  'type': 'http',
+  'url': 'https://yoursite/api/coconut/webhook'
+}
+
+coconut.storage = {
+  'service': 's3',
+  'bucket': 'my-bucket',
+  'region': 'us-east-1',
+  'credentials': {
+    'access_key_id': 'access-key',
+    'secret_access_key': 'secret-key'
+  }
+}
 ```
 
-You can also create a job without a config file. To do that you will need to give every settings in the method parameters. Here is the exact same job but without a config file:
+## Creating a job
 
 ```python
-vid = 1234
-s3 = 's3://accesskey:secretkey@mybucket'
-
-job = coconut.job.create(
-  api_key='k-api-key',
-  source='http://yoursite.com/media/video.mp4',
-  webhook='http://mysite.com/webhook/coconut?videoId=' + str(vid),
-  outputs={
-    'mp4': s3 + '/videos/video_' + str(vid) + '.mp4',
-    'webm': s3 + '/videos/video_' + str(vid) + '.webm',
-    'jpg:300x': s3 + '/previews/thumbs_#num#.jpg, number=3'
+coconut.Job.create(
+  'input': { 'url': 'https://mysite/path/file.mp4' },
+  'outputs': {
+    'jpg:300x': { 'path': '/image.jpg' },
+    'mp4:1080p': { 'path': '/1080p.mp4' },
+    'httpstream': {
+      'hls': { 'path': 'hls/' }
+    }
   }
 )
 ```
 
-
-Other example usage:
+## Getting information about a job
 
 ```python
-# Getting info about a job
-job = coconut.job.get(18370773);
-
-# Retrieving metadata
-coconut.job.get_all_metadata(18370773);
-
-# Retrieving the source file metadata only
-coconut.job.get_metadata_for(18370773, 'source');
+coconut.Job.retrieve('OolQXaiU86NFki')
 ```
 
-Note that you can use the environment variable `COCONUT_API_KEY` to set your API key.
+## Retrieving metadata
 
-## Contributing
+```python
+coconut.Metadata.retrieve('OolQXaiU86NFki')
+```
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+## Per-request configuration
 
+```python
+cli = coconut.Client(api_key="k-api-key-prod")
+coconut.Job.create(job, client=cli)
+```
 
 *Released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).*
-
----
-
-* Coconut website: http://coconut.co
-* API documentation: http://coconut.co/docs
-* Contact: [support@coconut.co](mailto:support@coconut.co)
-* Twitter: [@OpenCoconut](http://twitter.com/opencoconut)

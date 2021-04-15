@@ -1,0 +1,2 @@
+class CoconutError(Exception):
+  pass

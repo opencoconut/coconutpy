@@ -2,3 +2,4 @@ build
 coconutpy.egg-info
 dist
 *.pyc
+run_tests

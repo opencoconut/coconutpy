@@ -1,188 +1,79 @@
 import unittest
-import coconut
-from coconut import job, config
 import os
 import time
 
-API_KEY_PARAM = None
+import coconut
+from coconut.client import Client
+from coconut.job import Job
+from coconut.metadata import Metadata
 
 class CoconutTestCase(unittest.TestCase):
-    @unittest.skipIf(API_KEY_PARAM is None,
-                   'To run this test, set API_KEY_PARAM, but do not commit it to the repo.')
-    def test_submit_job(self):
-      conf = coconut.config.new(
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        webhook='http://mysite.com/webhook',
-        outputs={'mp4': 's3://a:s@bucket/video.mp4'}
-      )
 
-      job = coconut.job.submit(conf)
-      self.assertEqual("processing", job["status"])
-      self.assertTrue(job["id"] > 0)
+  INPUT_URL = "https://s3-eu-west-1.amazonaws.com/files.coconut.co/bbb_800k.mp4"
 
-    @unittest.skipIf(API_KEY_PARAM is None, 
-                     'To run this test, set API_KEY_PARAM, but do not commit it to the repo.')
-    def test_submit_job_with_auth_token_param(self):
-      conf = coconut.config.new(
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        webhook='http://mysite.com/webhook',
-        outputs={'mp4': 's3://a:s@bucket/video.mp4'}
-      )
+  def setUp(self):
+    coconut.api_key = os.getenv("COCONUT_API_KEY")
+    coconut.endpoint = os.getenv("COCONUT_ENDPOINT")
 
-      job = coconut.job.submit(conf, api_key=API_KEY_PARAM)
-      self.assertEqual("processing", job["status"])
-      self.assertTrue(job["id"] > 0)
+    coconut.storage = {
+      "service": "s3",
+      "region": os.getenv("AWS_REGION"),
+      "credentials": { "access_key_id": os.getenv("AWS_ACCESS_KEY_ID"), "secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY") },
+      "bucket": os.getenv("AWS_BUCKET"),
+      "path": "/coconutrb/tests/"
+    }
 
-    def test_submit_bad_config(self):
-      conf = coconut.config.new(
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4'
-      )
+    coconut.notification = {
+      "type": "http",
+      "url": os.getenv("COCONUT_WEBHOOK_URL")
+    }
 
-      job = coconut.job.submit(conf)
-      self.assertEqual("error", job["status"])
-      self.assertEqual("config_not_valid", job["error_code"])
+  def create_job(self, j={}, **kwargs):
+    job = {
+      "input": { "url": self.INPUT_URL },
+      "outputs": {
+       "mp4": { "path": "/test_create_job.mp4", "duration": 1 }
+      }
+    }
+    job.update(j)
 
-    def test_generate_full_config_with_no_file(self):
-      conf = coconut.config.new(
-        vars={
-          'vid': 1234,
-          'user': 5098,
-          's3': 's3://a:s@bucket'
-        },
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        webhook='http://mysite.com/webhook?vid=$vid&user=$user',
-        outputs={
-          'mp4': '$s3/vid.mp4',
-          'webm': '$s3/vid.webm',
-          'jpg_200x': '$s3/thumb.jpg'
-        }
-      )
+    return Job.create(job, **kwargs)
 
-      generated = "\n".join([
-        'var s3 = s3://a:s@bucket',
-        'var user = 5098',
-        'var vid = 1234',
-        '',
-        'set source = https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        'set webhook = http://mysite.com/webhook?vid=$vid&user=$user',
-        '',
-        '-> jpg_200x = $s3/thumb.jpg',
-        '-> mp4 = $s3/vid.mp4',
-        '-> webm = $s3/vid.webm'
-      ])
+  def test_coconut_api_key(self):
+    coconut.api_key = "apikey"
+    self.assertEqual("apikey", coconut.api_key)
 
-      self.assertEqual(generated, conf)
+  def test_coconut_region(self):
+    coconut.region = "us-east-1"
+    self.assertEqual("us-east-1", coconut.region)
 
-    def test_generate_config_with_file(self):
-      file = open('coconut.conf', 'w')
-      file.write("var s3 = s3://a:s@bucket/video\nset webhook = http://mysite.com/webhook?vid=$vid&user=$user\n-> mp4 = $s3/$vid.mp4")
-      file.close()
+  def test_overwrite_endpoint(self):
+    myendpoint = "https://coconut-private/v2"
+    coconut.endpoint = myendpoint
 
-      conf = coconut.config.new(
-        conf='coconut.conf',
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        vars={'vid': 1234, 'user': 5098}
-      )
+    self.assertEqual(myendpoint, coconut.endpoint)
 
-      generated = "\n".join([
-        'var s3 = s3://a:s@bucket/video',
-        'var user = 5098',
-        'var vid = 1234',
-        '',
-        'set source = https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        'set webhook = http://mysite.com/webhook?vid=$vid&user=$user',
-        '',
-        '-> mp4 = $s3/$vid.mp4'
-      ])
+  def test_create_job(self):
+    job = self.create_job()
+    self.assertTrue(isinstance(job, dict))
+    self.assertIsNotNone(job["id"])
+    self.assertEqual("job.starting", job["status"])
 
-      self.assertEqual(generated, conf)
+  def test_retrieve_job(self):
+    job = Job.retrieve(self.create_job()["id"])
+    self.assertTrue(isinstance(job, dict))
+    self.assertIsNotNone(job["id"])
+    self.assertEqual("job.starting", job["status"])
 
-      os.remove('coconut.conf')
 
-    def test_submit_file(self):
-      file = open('coconut.conf', 'w')
-      file.write("set webhook = http://mysite.com/webhook?vid=$vid&user=$user\n-> mp4 = s3://a:s@bucket/video/$vid.mp4")
-      file.close()
+  def test_retrieve_metadata(self):
+    job = self.create_job()
+    time.sleep(10)
 
-      job = coconut.job.create(
-        conf='coconut.conf',
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        vars={'vid': 1234, 'user': 5098}
-      )
+    md = Metadata.retrieve(job["id"])
+    self.assertTrue(isinstance(md, dict))
+    self.assertIsNotNone(md["metadata"]["input"])
 
-      self.assertEqual("processing", job["status"])
-      self.assertTrue(job["id"] > 0)
-
-      os.remove('coconut.conf')
-
-    def test_set_api_key_in_job_options(self):
-      job = coconut.job.create(
-        api_key='k-4d204a7fd1fc67fc00e87d3c326d9b75',
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4'
-      )
-
-      self.assertEqual("error", job["status"])
-      self.assertEqual("authentication_failed", job["error_code"])
-
-    def test_get_job_info(self):
-      conf = coconut.config.new(
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        webhook='http://mysite.com/webhook',
-        outputs={'mp4': 's3://a:s@bucket/video.mp4'}
-      )
-
-      info = coconut.job.submit(conf)
-      job = coconut.job.get(info['id'])
-      self.assertEqual(job['id'], info['id'])
-
-    def test_get_all_metadata(self):
-      conf = coconut.config.new(
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        webhook='http://mysite.com/webhook',
-        outputs={'mp4': 's3://a:s@bucket/video.mp4'}
-      )
-
-      job = coconut.job.submit(conf)
-
-      time.sleep(4)
-      metadata = coconut.job.get_all_metadata(job['id'])
-
-      self.assertIsNotNone(metadata)
-
-    def test_get_source_metadata(self):
-      conf = coconut.config.new(
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        webhook='http://mysite.com/webhook',
-        outputs={'mp4': 's3://a:s@bucket/video.mp4'}
-      )
-
-      job = coconut.job.submit(conf)
-
-      time.sleep(4)
-      metadata = coconut.job.get_metadata_for(job['id'], 'source')
-
-      self.assertIsNotNone(metadata)
-
-    def test_set_api_version(self):
-      conf = coconut.config.new(
-        api_version='beta',
-        source='https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        webhook='http://mysite.com/webhook?vid=$vid&user=$user',
-        outputs={
-          'mp4': '$s3/vid.mp4'
-        }
-      )
-
-      generated = "\n".join([
-        '',
-        'set api_version = beta',
-        'set source = https://s3-eu-west-1.amazonaws.com/files.coconut.co/test.mp4',
-        'set webhook = http://mysite.com/webhook?vid=$vid&user=$user',
-        '',
-        '-> mp4 = $s3/vid.mp4',
-      ])
-
-      self.assertEqual(generated, conf)
 
 if __name__ == '__main__':
     unittest.main()

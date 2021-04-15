@@ -7,14 +7,14 @@ def read(*paths):
         return f.read()
 setup(
   name = 'coconutpy',
-  version='2.4.3',
-  py_modules = ['coconut.job', 'coconut.config'],
+  version='3.0.0',
+  #py_modules = ['coconut.job', 'coconut.metadata'],
   packages=find_packages(exclude=['tests*']),
-  author='Bruno Celeste',
-  author_email='bruno@coconut.co',
+  author='Coconut',
+  author_email='team@coconut.co',
   description='A python wrapper around the Coconut API',
   license='MIT License',
-  url='http://coconut.co',
+  url='https://coconut.co',
   keywords='coconut video encoding api',
   install_requires=[ "httplib2" ],
 	long_description="""Client Library for encoding Videos with Coconut
@@ -23,14 +23,17 @@ Coconut is a Video Encoding Web Service built for developers.
 
 For more information:
 
-* Coconut: http://coconut.co
-* API Documentation: http://coconut.co/docs
+* Coconut: https://coconut.co
+* API Documentation: https://docs.coconut.co
 * Twitter: @openCoconut
 
 Changelogs
 
+3.0.0
+New pytonh library compatible with Coconut APIv2
+
 2.4.3
-Fix Authorization Header: 
+Fix Authorization Header:
 "TypeError: a bytes-like object is required, not 'str'" was returned before
 
 2.4.2
