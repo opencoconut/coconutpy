@@ -45,12 +45,14 @@ coconut.storage = {
 
 ```python
 coconut.Job.create(
-  'input': { 'url': 'https://mysite/path/file.mp4' },
-  'outputs': {
-    'jpg:300x': { 'path': '/image.jpg' },
-    'mp4:1080p': { 'path': '/1080p.mp4' },
-    'httpstream': {
-      'hls': { 'path': 'hls/' }
+  {
+    'input': { 'url': 'https://mysite/path/file.mp4' },
+    'outputs': {
+      'jpg:300x': { 'path': '/image.jpg' },
+      'mp4:1080p': { 'path': '/1080p.mp4' },
+      'httpstream': {
+        'hls': { 'path': 'hls/' }
+      }
     }
   }
 )
